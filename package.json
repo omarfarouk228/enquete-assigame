@@ -1,0 +1,17 @@
+{
+  "name": "enquete-assigame",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Enquête à Assigamé : point-and-click d'enquête autour du Grand marché de Lomé",
+  "scripts": {
+    "dev": "vite --port 5176 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --port 4176",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0",
+    "vitest": "^3.2.7"
+  }
+}

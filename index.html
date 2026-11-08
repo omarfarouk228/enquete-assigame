@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#14202b">
+  <title>Enquête à Assigamé</title>
+  <meta name="description" content="Lomé, un samedi de 2026. La malle de wax anciens de Dada Akossiwa a disparu à l'aube. Enquête autour du Grand marché avant le car de 14 h.">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&family=Caveat:wght@500;700&family=Archivo:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+  <canvas id="scene" aria-label="Rues de Lomé"></canvas>
+
+  <header id="hud" hidden>
+    <div class="place"><b id="h-place">Rue du Commerce</b><span id="h-sub"></span></div>
+    <div class="clock"><span>Car pour Cotonou à 14 h</span><b id="h-time">9 h 00</b><i class="tbar"><i id="h-tbar"></i></i></div>
+    <nav class="tools">
+      <button id="b-notes" title="Carnet (C)">Carnet <em id="n-count">0</em></button>
+      <button id="b-map" title="Plan (P)">Plan</button>
+      <button id="b-sound" class="icon" title="Couper le son (M)" aria-label="Couper le son"></button>
+    </nav>
+  </header>
+  <div id="tip" hidden></div>
+  <div id="toast" hidden></div>
+
+  <!-- Dialogue -->
+  <section id="dlg" hidden>
+    <canvas id="dlg-portrait" width="520" height="640"></canvas>
+    <div class="dlg-box">
+      <div class="dlg-who"><b id="dlg-name"></b><span id="dlg-role"></span></div>
+      <p id="dlg-text"></p>
+      <div id="dlg-choices"></div>
+    </div>
+  </section>
+
+  <section id="panel" class="screen"></section>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
