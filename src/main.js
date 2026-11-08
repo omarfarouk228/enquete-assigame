@@ -6,6 +6,10 @@ import { drawFigure } from './figure.js';
 import { drawPortrait } from './portrait.js';
 import { zemRide, chase, roomSearch } from './minigames.js';
 import { initAudio, setMuted, muted, setPlace, sfx, setEngine } from './audio.js';
+import { Stage3D, MODELS } from './stage3d.js';
+const USE3D = new URLSearchParams(location.search).has('3d');   // 3D en option tant que les vêtements des personnages ne sont pas finalisés
+const stage = USE3D ? new Stage3D(document.getElementById('scene3d')) : null;
+const over = document.getElementById('over'), octx = over.getContext('2d');
 
 const cv = document.getElementById('scene'), ctx = cv.getContext('2d');
 const $ = (id) => document.getElementById(id);
@@ -26,7 +30,7 @@ const fmt = (m) => `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}`;
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 1.5);
   W = Math.round(innerWidth * DPR); H = Math.round(innerHeight * DPR);
-  cv.width = W; cv.height = H; people = null; C = null;
+  cv.width = W; cv.height = H; over.width = W; over.height = H; people = null; C = null;
 }
 addEventListener('resize', resize);
 
@@ -43,9 +47,11 @@ function visiblePeople(loc) {
     return true;
   });
 }
+const ANIM3D = { ayaovi: 'Idle_Loop', komi: 'Crouch_Idle_Loop', dossou: 'Idle_Loop', kodjo: 'Idle_Loop', dada: 'Idle_Loop', sena: 'Idle_Loop', mawuli: 'Idle_Loop' };
 function layout(loc = S ? S.loc : 'etal') {
   C = crowd(loc, W, H);
   people = visiblePeople(loc).map(([id, [fx, sc]]) => ({ id, x: W * fx, sc, box: null }));
+  if (stage) stage.setPeople(people.map(p => ({ id: p.id, url: `${MODELS}${p.id}.glb`, fx: p.x / W, sc: p.sc, anim: ANIM3D[p.id] || 'Idle_Loop' })));
 }
 
 function drawLocation(loc, t, dt, zoom = 1, showPeople = true) {
@@ -55,14 +61,23 @@ function drawLocation(loc, t, dt, zoom = 1, showPeople = true) {
   if (!C || C.loc !== loc) C = crowd(loc, W, H);
   drawCrowd(ctx, C, W, H, dt, t);
   const fg = foreground(loc, W, H); if (fg) ctx.drawImage(fg, 0, 0);
-  if (showPeople) {
+  if (showPeople && !stage) {
     const ground = H * 0.97;
     for (const p of people || []) {
       const hpx = H * 0.5 * p.sc;
       p.box = drawFigure(ctx, p.id, PEOPLE[p.id].look, p.x, ground - (1 - p.sc) * H * 0.18, hpx, t, hover && hover.kind === 'p' && hover.id === p.id);
     }
   }
-  const ov = OVER[loc] && foreground(OVER[loc], W, H); if (ov) ctx.drawImage(ov, 0, 0);
+  if (stage) {
+    // personnages 3D : boîtes de clic et anneau de survol ; le calque « par-dessus » passe sur le canevas supérieur
+    stage.visible = showPeople && !mini;
+    const bx = stage.boxes();
+    for (const p of people || []) { const b = bx[p.id]; p.box = b ? { x0: b.x0 * DPR, x1: b.x1 * DPR, y0: b.y0 * DPR, y1: b.y1 * DPR } : null; }
+    octx.clearRect(0, 0, W, H);
+    if (hover && hover.kind === 'p' && bx[hover.id]) { const b = bx[hover.id]; octx.strokeStyle = 'rgba(255,214,120,0.95)'; octx.lineWidth = 2.5 * DPR; octx.setLineDash([6 * DPR, 6 * DPR]); octx.beginPath(); octx.ellipse(b.fx * DPR, b.fy * DPR, b.hw * 1.3 * DPR, b.hw * 0.3 * DPR, 0, 0, Math.PI * 2); octx.stroke(); octx.setLineDash([]); }
+    const ov = OVER[loc] && foreground(OVER[loc], W, H); if (ov) octx.drawImage(ov, 0, 0);
+    const k = S ? Math.min(1, Math.max(0, (S.t - START) / (DEADLINE - START))) : 0; stage.setDaylight(k);
+  } else { const ov = OVER[loc] && foreground(OVER[loc], W, H); if (ov) ctx.drawImage(ov, 0, 0); }
   ctx.restore();
   // lumière de la journée : fraîche à 9 h, dure et chaude à 13 h
   const k = S ? Math.min(1, Math.max(0, (S.t - START) / (DEADLINE - START))) : 0;
@@ -91,18 +106,20 @@ function frame(now) {
   if (!people) layout(loc);
   drawLocation(loc, t, dt);
   if (S && !panelOpen()) {
+    const g = stage ? octx : ctx;
     for (const h of HOTSPOTS[loc] || []) {
       if (!hotspotOk(h)) continue;
       const x = h.x * W, y = h.y * H, seen = S.seen.includes(`${loc}:${h.id}`);
       const pulse = 0.5 + 0.5 * Math.sin(t * 3 + h.x * 10);
-      ctx.strokeStyle = seen ? 'rgba(243,234,216,0.25)' : `rgba(255,214,120,${0.45 + pulse * 0.45})`;
-      ctx.lineWidth = 2 * DPR;
-      ctx.beginPath(); ctx.arc(x, y, (10 + pulse * 6) * DPR, 0, Math.PI * 2); ctx.stroke();
-      if (!seen) { ctx.fillStyle = `rgba(255,214,120,${0.5 + pulse * 0.4})`; ctx.beginPath(); ctx.arc(x, y, 3 * DPR, 0, Math.PI * 2); ctx.fill(); }
-      if (hover && hover.kind === 'h' && hover.id === h.id) { ctx.fillStyle = 'rgba(255,214,120,0.18)'; ctx.beginPath(); ctx.arc(x, y, h.r * Math.min(W, H) * 1.4, 0, Math.PI * 2); ctx.fill(); }
+      g.strokeStyle = seen ? 'rgba(243,234,216,0.25)' : `rgba(255,214,120,${0.45 + pulse * 0.45})`;
+      g.lineWidth = 2 * DPR;
+      g.beginPath(); g.arc(x, y, (10 + pulse * 6) * DPR, 0, Math.PI * 2); g.stroke();
+      if (!seen) { g.fillStyle = `rgba(255,214,120,${0.5 + pulse * 0.4})`; g.beginPath(); g.arc(x, y, 3 * DPR, 0, Math.PI * 2); g.fill(); }
+      if (hover && hover.kind === 'h' && hover.id === h.id) { g.fillStyle = 'rgba(255,214,120,0.18)'; g.beginPath(); g.arc(x, y, h.r * Math.min(W, H) * 1.4, 0, Math.PI * 2); g.fill(); }
     }
   }
-  if (!$('dlg').hidden && dlg.who) {
+  if (stage) { stage.setTalking(!!typing && !$('dlg').hidden); stage.update(dt); stage.render(); }
+  if (!$('dlg').hidden && dlg.who && !stage) {
     dlg.mixT = Math.min(1, dlg.mixT + dt * 4);
     const talk = typing ? 1 : 0; dlg.talk += (talk - dlg.talk) * Math.min(1, dt * 10);
     const c = $('dlg-portrait'), g = c.getContext('2d');
@@ -224,6 +241,7 @@ function show(key) {
   const who = node.who;
   if (dlg.who !== who) { dlg.who = who; dlg.expr = 'neutre'; dlg.from = 'neutre'; dlg.mixT = 1; }
   $('dlg').hidden = false;
+  if (stage) { stage.focus(who); $('dlg-portrait').hidden = true; $('dlg').classList.add('d3'); }
   $('dlg-name').textContent = PEOPLE[who].name; $('dlg-role').textContent = PEOPLE[who].role;
   setExpr(exprFor(node));
   if (node.clue) addClue(node.clue);
@@ -269,11 +287,11 @@ function presentClue(Cf) {
   box.appendChild(grid);
   const q = document.createElement('button'); q.textContent = 'Annuler'; q.onclick = closeDlg; box.appendChild(q);
 }
-function closeDlg() { clearInterval(typing); typing = null; $('dlg').hidden = true; dlg.who = null; if (S && !S.ended) setPlace(S.loc); hud(); save(); }
+function closeDlg() { clearInterval(typing); typing = null; $('dlg').hidden = true; dlg.who = null; if (stage) stage.focus(null); if (S && !S.ended) setPlace(S.loc); hud(); save(); }
 
 // ------------------------------------------------------------------ séquences d'action
-function runMini(m) { mini = m; panel.innerHTML = ''; $('hud').hidden = true; $('tip').hidden = true; }
-function endMini() { mini = null; setEngine(false); if (S && !S.ended) $('hud').hidden = false; people = null; C = null; }
+function runMini(m) { mini = m; panel.innerHTML = ''; $('hud').hidden = true; $('tip').hidden = true; if (stage) { stage.show(false); octx.clearRect(0, 0, W, H); } }
+function endMini() { mini = null; setEngine(false); if (S && !S.ended) $('hud').hidden = false; people = null; C = null; if (stage) stage.show(true); }
 
 function startChase() {
   runMini(chase(W, H, DPR, { onHit: () => sfx('good'), onMiss: () => sfx('wrong') }, (res) => {

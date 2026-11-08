@@ -14,6 +14,9 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: var(--night); color: var(--paper); font-family: var(--sans); -webkit-tap-highlight-color: transparent; }
 #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+#scene3d, #over { position: fixed; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+#scene3d { z-index: 1; } #over { z-index: 2; }
+#hud, #tip, #toast, #dlg, #panel, #cine, #b-sound-float { z-index: 10; }
 [hidden] { display: none !important; }
 button { font: inherit; color: inherit; cursor: pointer; }
 
@@ -150,3 +153,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .score b { font-family: var(--serif); font-weight: 400; font-size: 24px; }
 #b-sound-float.off { color: var(--mustard); }
 @media (max-width: 760px) { .score { grid-template-columns: 1fr 1fr; } .pin b { font-size: 13px; } .pin span { display: none; } #cine p { font-size: 16px; bottom: 12vh; } }
+
+/* Dialogue avec personnage 3D : pas de colonne portrait, la boîte reste à droite, le fond laisse voir la scène */
+#dlg.d3 { grid-template-columns: 38vw 1fr; background: linear-gradient(90deg, rgba(20,32,43,.25), rgba(20,32,43,.05) 45%, rgba(20,32,43,.55)); }
+@media (max-width: 760px) { #dlg.d3 { grid-template-columns: 1fr; } #dlg.d3 .dlg-box { margin-top: 42vh; } }

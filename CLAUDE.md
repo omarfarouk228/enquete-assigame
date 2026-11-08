@@ -47,6 +47,12 @@ Jeu n°4 de la série TogoGame (après Route N1, Nana Benz, Évala). Ce fichier 
 ## Passage à la 3D (décidé le 2026-11-08)
 Voir `PLAN-3D.md` (plan commun aux trois jeux). Le socle Three.js est dans le dépôt Évala (`src/three/arena3d.js`) ; Assigamé viendra en deuxième, avec des personnages 3D devant les décors peints. Exigence : jouable sur mobile (les séquences d'action ont des zones tactiles ; vérifié en fenêtre étroite, pas sur un vrai téléphone).
 
+## Chantier 3D en cours (état au 2026-11-08, fin de session)
+- `src/stage3d.js` : scène Three.js transparente au-dessus des décors peints (lumière du jour, ombres de contact, placement des personnages par position écran, gros plan de dialogue de trois quarts avec `Idle_Talking_Loop`). Intégré dans `main.js` derrière le drapeau d'URL `?3d` (désactivé par défaut).
+- `public/models/UAL_blender.glb` : bibliothèque d'animations (CC0, Quaternius, passée par Blender).
+- **Bloquant** : les personnages MakeHuman habillés ne sont pas encore corrects. Le script `assets3d/scripts/mpfb_to_ual.py` met le corps en T-pose et transfère les poids, mais les **vêtements et cheveux ne suivent pas la T-pose** (le calcul `bake_pose(o, rig, SRC)` par plus proche sommet du corps ne déplace pas les manches : à déboguer, probablement les poids `SRC` filtrés sur `mats` vides ou l'ordre corps/vêtements). Tant que ce n'est pas réglé, les GLB générés sont nus ou mal habillés : **ils ont été retirés du dépôt**. Les régénérer avec `assets3d/scripts/make_assigame.sh` une fois le script corrigé, puis tester avec `?3d`.
+- Évala, lui, est passé en 3D (combat) : voir `Evala/PLAN-3D.md` et `Evala/src/three/`.
+
 ## Pistes
 - Personnages encore plus vivants : démarche, gestes pendant les dialogues, plus de variété de visages et de corps. L'utilisateur a demandé le 2026-11-08 « des personnages style GTA 5 » : voir la réponse dans la mémoire du dossier TogoGame (passage à la 3D ou art généré ; pas atteignable en Canvas procédural).
 - Second cas (nouvelle enquête) réutilisant les lieux et les séquences.
