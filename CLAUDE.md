@@ -44,18 +44,19 @@ Jeu n°4 de la série TogoGame (après Route N1, Nana Benz, Évala). Ce fichier 
 - Salutations éwé et mina en orthographe simplifiée (Woézon, Akpé, Efoa, Dada, Fofo, Yoo) : **à faire relire**.
 - Personnages, commerces, hôtel et événements : fictifs.
 
-## Passage à la 3D (décidé le 2026-11-08)
-Voir `PLAN-3D.md` (plan commun aux trois jeux). Le socle Three.js est dans le dépôt Évala (`src/three/arena3d.js`) ; Assigamé viendra en deuxième, avec des personnages 3D devant les décors peints. Exigence : jouable sur mobile (les séquences d'action ont des zones tactiles ; vérifié en fenêtre étroite, pas sur un vrai téléphone).
-
 ## Personnages 3D (v0.3, 2026-11-08)
+Décision de l'utilisateur : voie 1 (Three.js, modèles rigués) pour les trois jeux ; plan commun dans `PLAN-3D.md`.
 - `src/stage3d.js` : scène Three.js **transparente** au-dessus des décors peints (`#scene3d` entre `#scene` et le calque `#over` qui reçoit les points d'intérêt, le comptoir et l'anneau de survol). Lumière du jour qui suit l'heure (`setDaylight`), ombres de contact sur un sol invisible, personnages placés par position écran (`STAGE`), clips `Idle_Loop` / `Idle_Talking_Loop`. **Gros plan de dialogue** : caméra de trois quarts face, visage à droite (la boîte est à gauche), lumière d'appoint portée par la caméra. `boxes()` fournit les zones de clic. `?2d` dans l'URL rend les personnages peints de `figure.js` (toujours là).
 - `public/models/*.glb` : huit personnages MakeHuman habillés (dada, mawuli, sena, kodjo, komi, ayaovi, dossou, kafui ; 4 à 6 Mo chacun) et `UAL_blender.glb` (clips CC0 Quaternius). Générés par `~/Documents/Github/TogoGame/assets3d/scripts/make_assigame.sh` (options par personnage : sexe, âge, corpulence, peau, vêtements, cheveux) qui appelle `mpfb_to_ual.py` (Blender 5.2 + MPFB2 en arrière-plan : T-pose, poids du corps Quaternius transférés au corps puis aux vêtements et cheveux par plus proche sommet, textures réduites, export GLB).
 - Vérifié dans Chrome : étal, carrefour, hôtel (Dossou en costume), clic sur un personnage 3D, gros plan, aucune erreur de console. **Non vérifié sur téléphone** (le redimensionnement de fenêtre n'a pas fonctionné dans Chrome) : le rendu baisse le pixel ratio sous 700 px.
 - Limites : vêtements MakeHuman génériques (pas de pagne wax ni de boubou en 3D : à modéliser ou à peindre dans la texture comme le short d'Évala), visages sans expression (pas de clés de forme), pas de regard vers le joueur, Kafui n'apparaît pas à l'écran (elle est la joueuse).
 
+## Session du 2026-11-08 (soir)
+- README réécrit (histoire, chapitres, mécaniques, commandes, technique, fichiers, sources, crédits CC0). Aucun correctif de jeu ce soir ; les retours de l'utilisateur portaient sur Évala et Nana Benz.
+
 ## Pistes
 - 3D : pagnes et boubous (peindre les textures des `casualsuit` ou modéliser), expressions du visage, gestes de dialogue (clips `Idle_Talking`, `Interact`), Kafui en 3D dans les cinématiques, foule de passants en 3D.
-- Personnages encore plus vivants : démarche, gestes pendant les dialogues, plus de variété de visages et de corps. L'utilisateur a demandé le 2026-11-08 « des personnages style GTA 5 » : voir la réponse dans la mémoire du dossier TogoGame (passage à la 3D ou art généré ; pas atteignable en Canvas procédural).
+- Personnages encore plus vivants en 3D : démarche, gestes pendant les dialogues, regard vers la joueuse.
 - Second cas (nouvelle enquête) réutilisant les lieux et les séquences.
 - Voix synthétisées par personnage, comme dans Nana Benz.
 - Icône d'écran d'accueil, manifeste, image Open Graph.
