@@ -7,7 +7,7 @@ import { drawPortrait } from './portrait.js';
 import { zemRide, chase, roomSearch } from './minigames.js';
 import { initAudio, setMuted, muted, setPlace, sfx, setEngine } from './audio.js';
 import { Stage3D, MODELS } from './stage3d.js';
-const USE3D = new URLSearchParams(location.search).has('3d');   // 3D en option tant que les vêtements des personnages ne sont pas finalisés
+const USE3D = !new URLSearchParams(location.search).has('2d');   // personnages 3D par défaut ; ?2d rend les personnages peints
 const stage = USE3D ? new Stage3D(document.getElementById('scene3d')) : null;
 const over = document.getElementById('over'), octx = over.getContext('2d');
 
@@ -47,7 +47,7 @@ function visiblePeople(loc) {
     return true;
   });
 }
-const ANIM3D = { ayaovi: 'Idle_Loop', komi: 'Crouch_Idle_Loop', dossou: 'Idle_Loop', kodjo: 'Idle_Loop', dada: 'Idle_Loop', sena: 'Idle_Loop', mawuli: 'Idle_Loop' };
+const ANIM3D = { ayaovi: 'Idle_Loop', komi: 'Idle_Loop', dossou: 'Idle_Loop', kodjo: 'Idle_Loop', dada: 'Idle_Loop', sena: 'Idle_Loop', mawuli: 'Idle_Loop' };
 function layout(loc = S ? S.loc : 'etal') {
   C = crowd(loc, W, H);
   people = visiblePeople(loc).map(([id, [fx, sc]]) => ({ id, x: W * fx, sc, box: null }));
@@ -496,4 +496,4 @@ addEventListener('pointerdown', () => initAudio(), { once: true });
 resize();
 title();
 requestAnimationFrame(frame);
-window.__as = { get S() { return S; }, set S(v) { S = v; people = null; C = null; hud(); }, show, go, arrive, ending, notes, map, start, startChase, startSearch, startZem, chapterCard, deduction, get mini() { return mini; } };
+window.__as = { stage, get S() { return S; }, set S(v) { S = v; people = null; C = null; hud(); }, show, go, arrive, ending, notes, map, start, startChase, startSearch, startZem, chapterCard, deduction, get mini() { return mini; } };

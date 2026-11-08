@@ -25,6 +25,8 @@ export class Stage3D {
     this.sun = new THREE.DirectionalLight(0xfff1d6, 2.2); this.sun.position.set(-5, 9, 6); this.sun.castShadow = true;
     this.sun.shadow.mapSize.set(small ? 1024 : 2048, small ? 1024 : 2048); this.sun.shadow.camera.left = -10; this.sun.shadow.camera.right = 10; this.sun.shadow.camera.top = 10; this.sun.shadow.camera.bottom = -10; this.sun.shadow.camera.far = 40; this.sun.shadow.bias = -0.0004; this.sun.shadow.normalBias = 0.02;
     this.scene.add(this.sun); this.scene.add(this.sun.target);
+    // lumière d'appoint portée par la caméra, allumée seulement en gros plan (visage lisible à contre-jour)
+    this.fill = new THREE.PointLight(0xffe9d0, 0, 6, 1.5); this.camera.add(this.fill); this.fill.position.set(0.4, 0.2, 0.3); this.scene.add(this.camera);
     // le sol invisible ne sert qu'à recevoir les ombres de contact
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.ShadowMaterial({ opacity: 0.32 }));
     ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; this.scene.add(ground);
@@ -58,7 +60,7 @@ export class Stage3D {
       const model = skeletonClone(gltf.scene);
       model.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; o.frustumCulled = false; o.geometry.computeVertexNormals(); o.material = o.material.clone(); if (o.material.map) { o.material.roughness = Math.min(0.75, o.material.roughness + 0.1); } } });
       const group = new THREE.Group(); group.add(model); this.scene.add(group);
-      const z = -(1 - it.sc) * 7, dist = D - z;
+      const z = -1.7 - (1 - it.sc) * 7, dist = D - z;   // un peu en retrait : même échelle que les passants peints
       const width = 2 * dist * Math.tan(FOV / 2 * Math.PI / 180) * this.camera.aspect;
       group.position.set((it.fx - 0.5) * width, 0, z);
       model.rotation.y = it.face || 0.25 * (it.fx > 0.5 ? -1 : 1);   // légèrement tourné vers le centre
@@ -96,15 +98,17 @@ export class Stage3D {
     if (F && this.focusK > 0.001) {
       const head = F.model.getObjectByName('Head') || F.model.getObjectByName('head');
       const hp = new THREE.Vector3(); if (head) head.getWorldPosition(hp); else F.group.getWorldPosition(hp).add(new THREE.Vector3(0, 1.55, 0));
-      hp.y += 0.06;
-      const dir = new THREE.Vector3(-0.42, 0.08, 1).normalize().multiplyScalar(1.45);
+      hp.y += 0.1;   // l'os Head est à la base du crâne : on vise le visage
+      // caméra de trois quarts face, à hauteur des yeux, 2 m devant ; dans le sens où le modèle regarde (+z, tourné de rotation.y)
+      const ry = F.model.rotation.y;
+      const dir = new THREE.Vector3(Math.sin(ry) * 1 - 0.35, 0.02, Math.cos(ry) * 1).normalize().multiplyScalar(2.1);
       const cp = hp.clone().add(dir);
-      pos = wide.pos.clone().lerp(cp, this.focusK); look = wide.look.clone().lerp(hp.clone().add(new THREE.Vector3(0, -0.12, 0)), this.focusK);
-      fov = FOV + (24 - FOV) * this.focusK; off = 0.27 * this.focusK;
+      pos = wide.pos.clone().lerp(cp, this.focusK); look = wide.look.clone().lerp(hp.clone().add(new THREE.Vector3(0, -0.16, 0)), this.focusK);
+      fov = FOV + (22 - FOV) * this.focusK; off = -0.2 * this.focusK;   // décalé à droite : la boîte de dialogue est à gauche
     }
-    this.camera.position.copy(pos); this.camera.lookAt(look);
+    this.camera.position.copy(pos); this.camera.lookAt(look); this.fill.intensity = 2.4 * this.focusK;
     if (Math.abs(this.camera.fov - fov) > 0.01) { this.camera.fov = fov; this.camera.updateProjectionMatrix(); }
-    if (off > 0.001) this.camera.setViewOffset(this.W, this.H, off * this.W, 0, this.W, this.H); else if (this.camera.view && this.camera.view.enabled) this.camera.clearViewOffset();
+    if (Math.abs(off) > 0.001) this.camera.setViewOffset(this.W, this.H, off * this.W, 0, this.W, this.H); else if (this.camera.view && this.camera.view.enabled) this.camera.clearViewOffset();
     this.sun.target.position.set(0, 0, 0);
   }
 
