@@ -44,6 +44,9 @@ Jeu n°4 de la série TogoGame (après Route N1, Nana Benz, Évala). Ce fichier 
 - Salutations éwé et mina en orthographe simplifiée (Woézon, Akpé, Efoa, Dada, Fofo, Yoo) : **à faire relire**.
 - Personnages, commerces, hôtel et événements : fictifs.
 
+## Passage à la 3D (décidé le 2026-11-08)
+Voir `PLAN-3D.md` (plan commun aux trois jeux). Le socle Three.js est dans le dépôt Évala (`src/three/arena3d.js`) ; Assigamé viendra en deuxième, avec des personnages 3D devant les décors peints. Exigence : jouable sur mobile (les séquences d'action ont des zones tactiles ; vérifié en fenêtre étroite, pas sur un vrai téléphone).
+
 ## Pistes
 - Personnages encore plus vivants : démarche, gestes pendant les dialogues, plus de variété de visages et de corps. L'utilisateur a demandé le 2026-11-08 « des personnages style GTA 5 » : voir la réponse dans la mémoire du dossier TogoGame (passage à la 3D ou art généré ; pas atteignable en Canvas procédural).
 - Second cas (nouvelle enquête) réutilisant les lieux et les séquences.
