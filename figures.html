@@ -1,0 +1,16 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Figures</title>
+<style>body{margin:0;background:#8fa3b3}canvas{display:block}</style></head>
+<body><canvas id="c" width="1800" height="1100"></canvas><script type="module">
+import { PEOPLE } from './src/story.js';
+import { drawFigure } from './src/figure.js';
+import { drawPortrait } from './src/portrait.js';
+const g=document.getElementById('c').getContext('2d');
+g.fillStyle='#c9a77a'; g.fillRect(0,0,1800,560); g.fillStyle='#6b7f8f'; g.fillRect(0,560,1800,540);
+let i=0; let t=0;
+function draw(){ g.fillStyle='#c9a77a'; g.fillRect(0,0,1800,560);
+  i=0; for (const [id,p] of Object.entries(PEOPLE)) { drawFigure(g,id,p.look,130+i*245,540,460,t); i++; }
+  requestAnimationFrame(draw); t+=1/60; }
+draw();
+const ex=['neutre','sourire','colere','inquiet','surpris','triste'];
+let k=0; for (const [id,p] of Object.entries(PEOPLE)) { const c=document.createElement('canvas'); c.width=520; c.height=640; drawPortrait(c.getContext('2d'),520,640,p.look,ex[k%6],0,{talk: k%2}); g.drawImage(c, 10+k*250, 570, 240, 295); k++; }
+</script></body></html>

@@ -107,3 +107,46 @@ button { font: inherit; color: inherit; cursor: pointer; }
   .dlg-box { margin: 0 12px 14px; padding: 16px 18px; }
   #dlg-text { font-size: 16px; }
 }
+
+/* ---------- v0.2 : chapitres, cinématiques, plan, déductions, score ---------- */
+#cine { position: fixed; inset: 0; pointer-events: auto; cursor: pointer; }
+#cine .bar { position: absolute; left: 0; right: 0; height: 11vh; background: #050709; }
+#cine .bar.top { top: 0; animation: bardown .8s ease-out both; } #cine .bar.bottom { bottom: 0; animation: barup .8s ease-out both; }
+@keyframes bardown { from { transform: translateY(-100%); } } @keyframes barup { from { transform: translateY(100%); } }
+#cine p { position: absolute; left: 50%; bottom: 13vh; transform: translateX(-50%); width: min(820px, 88vw); margin: 0; text-align: center; font-family: var(--serif); font-size: clamp(18px, 2.4vw, 28px); line-height: 1.35; color: var(--paper); text-shadow: 0 2px 14px rgba(0,0,0,.8); animation: capin 1.2s .4s both; }
+@keyframes capin { from { opacity: 0; transform: translate(-50%, 10px); } }
+#cine small { position: absolute; right: 20px; bottom: 3vh; font-size: 12px; color: rgba(243,234,216,.6); letter-spacing: .1em; text-transform: uppercase; }
+#card { position: fixed; inset: 0; display: grid; place-content: center; text-align: center; background: #0b1016; color: var(--paper); z-index: 40; }
+#card span { font-size: 13px; letter-spacing: .36em; text-transform: uppercase; color: var(--mustard); font-weight: 700; }
+#card b { display: block; font-family: var(--serif); font-weight: 400; font-size: clamp(54px, 9vw, 120px); line-height: 1; margin: 14px 0 10px; }
+#card em { font-style: normal; font-size: 15px; color: var(--paper-dim); letter-spacing: .1em; }
+#card.go { animation: cardfade 3.4s both; } #card.go b { animation: cardtitle 1.6s cubic-bezier(.2,.9,.3,1) both; } #card.go span, #card.go em { animation: capin 1s .5s both; }
+@keyframes cardfade { 0% { opacity: 0; } 12% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes cardtitle { from { opacity: 0; letter-spacing: .2em; transform: scale(1.04); } to { opacity: 1; letter-spacing: 0; transform: none; } }
+.paper.wide { max-width: 980px; }
+.h3 { font-family: var(--serif); font-weight: 400; font-size: 24px; margin: 22px 0 4px; }
+.btn.ghost-light { background: transparent; color: var(--paper); border: 1px solid rgba(243,234,216,.4); }
+/* plan dessiné */
+.mapwrap { position: relative; margin-top: 14px; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.2); }
+.mapwrap canvas { width: 100%; height: auto; display: block; }
+.pin { position: absolute; transform: translate(-50%, -100%); background: transparent; border: 0; padding: 0; text-align: center; color: var(--ink); }
+.pin i { display: block; width: 18px; height: 18px; margin: 0 auto; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--red); border: 2px solid #fff; box-shadow: 0 3px 8px rgba(0,0,0,.35); transition: transform .15s; }
+.pin b { display: block; font-family: var(--serif); font-weight: 400; font-size: 16px; margin-top: 4px; background: rgba(243,234,216,.9); padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+.pin span { display: block; font-size: 11px; color: #6b5f50; background: rgba(243,234,216,.85); border-radius: 4px; padding: 1px 6px; margin-top: 2px; white-space: nowrap; }
+.pin:hover i { transform: rotate(-45deg) scale(1.25); }
+.pin.here i { background: var(--mustard); } .pin.here b { outline: 2px solid var(--mustard); }
+.pin.locked { opacity: .5; cursor: not-allowed; } .pin.locked i { background: #8a8070; }
+/* déductions */
+.ded { background: #fffaf0; border-radius: 12px; padding: 14px 16px; margin-top: 12px; }
+.ded b { display: block; font-family: var(--serif); font-weight: 400; font-size: 20px; margin-bottom: 8px; }
+.ded .opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+.ded .opt { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(29,26,23,.2); background: #fff; font-size: 14px; text-align: left; }
+.ded .opt.sel { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.ded small { display: block; margin-top: 8px; font-family: var(--hand); font-size: 18px; color: var(--blue); }
+/* score de fin */
+.score { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
+.score div { background: #fffaf0; border-radius: 10px; padding: 10px 12px; }
+.score label { display: block; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #6b5f50; font-weight: 700; }
+.score b { font-family: var(--serif); font-weight: 400; font-size: 24px; }
+#b-sound-float.off { color: var(--mustard); }
+@media (max-width: 760px) { .score { grid-template-columns: 1fr 1fr; } .pin b { font-size: 13px; } .pin span { display: none; } #cine p { font-size: 16px; bottom: 12vh; } }

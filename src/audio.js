@@ -87,8 +87,24 @@ function startLoops() {
   }, 80);
 }
 
+let engine = null;
+export function setEngine(on) {
+  if (!ac) return;
+  if (on && !engine) {
+    const o = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter(); o.type = 'sawtooth'; o.frequency.value = 95; f.type = 'lowpass'; f.frequency.value = 700;
+    const lfo = ac.createOscillator(), lg = ac.createGain(); lfo.frequency.value = 11; lg.gain.value = 9; lfo.connect(lg); lg.connect(o.frequency);
+    g.gain.setValueAtTime(0.0001, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.06, ac.currentTime + 0.4);
+    o.connect(f); f.connect(g); g.connect(master); o.start(); lfo.start(); engine = { o, g, lfo };
+  } else if (!on && engine) { const e = engine; engine = null; e.g.gain.setTargetAtTime(0.0001, ac.currentTime, 0.25); setTimeout(() => { e.o.stop(); e.lfo.stop(); }, 900); }
+}
 export function sfx(kind) {
   if (!ac) return; const t = ac.currentTime;
+  if (kind === 'crash') { const len = 0.3 * ac.sampleRate, b = ac.createBuffer(1, len, ac.sampleRate), d = b.getChannelData(0); for (let k = 0; k < len; k++) d[k] = (Math.random() * 2 - 1) * Math.pow(1 - k / len, 2); const s = ac.createBufferSource(); s.buffer = b; const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 900; const g = ac.createGain(); g.gain.value = 0.35; s.connect(f); f.connect(g); g.connect(master); s.start(t); tone(t, 90, 0.3, 0.2, 'triangle'); return; }
+  if (kind === 'step') { const len = 0.05 * ac.sampleRate, b = ac.createBuffer(1, len, ac.sampleRate), d = b.getChannelData(0); for (let k = 0; k < len; k++) d[k] = (Math.random() * 2 - 1) * (1 - k / len); const s = ac.createBufferSource(); s.buffer = b; const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 500; const g = ac.createGain(); g.gain.value = 0.25; s.connect(f); f.connect(g); g.connect(master); s.start(t); return; }
+  if (kind === 'tick') { tone(t, 1200, 0.05, 0.05, 'square'); return; }
+  if (kind === 'found') { tone(t, 659, 0.2, 0.07, 'triangle'); tone(t + 0.12, 988, 0.35, 0.07, 'triangle'); return; }
+  if (kind === 'card') { tone(t, 220, 1.2, 0.08, 'sine'); tone(t + 0.05, 330, 1.4, 0.05, 'sine'); tone(t + 0.1, 440, 1.6, 0.04, 'triangle'); return; }
+  if (kind === 'good') { [523, 659, 784].forEach((f, i) => tone(t + i * 0.07, f, 0.35, 0.06, 'triangle')); return; }
   if (kind === 'clue') { tone(t, 784, 0.25, 0.08, 'triangle'); tone(t + 0.1, 1175, 0.4, 0.07, 'triangle'); }
   else if (kind === 'click') tone(t, 600, 0.06, 0.03, 'triangle');
   else if (kind === 'wrong') { tone(t, 220, 0.25, 0.06, 'square'); tone(t + 0.15, 165, 0.35, 0.05, 'square'); }

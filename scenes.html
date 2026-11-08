@@ -1,0 +1,10 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Scènes</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@600&family=Archivo:wght@800&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#222;display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px}canvas{width:100%;display:block}</style></head>
+<body><script type="module">
+import { background, foreground, OVER, crowd, drawCrowd } from './src/scenes.js';
+await document.fonts.ready;
+const locs=['etal','poisson','carrefour','kiosque','hotel','gare'];
+const items=locs.map(l=>{const c=document.createElement('canvas');c.width=1000;c.height=560;document.body.appendChild(c);return {l,c,C:crowd(l,1000,560)};});
+let t=0; function f(){ for(const it of items){ const g=it.c.getContext('2d'); g.drawImage(background(it.l,1000,560),0,0); drawCrowd(g,it.C,1000,560,1/60,t); const fg=foreground(it.l,1000,560); if(fg) g.drawImage(fg,0,0); const ov=OVER[it.l]&&foreground(OVER[it.l],1000,560); if(ov) g.drawImage(ov,0,0);} t+=1/60; requestAnimationFrame(f);} f();
+</script></body></html>

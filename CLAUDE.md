@@ -17,24 +17,25 @@ Jeu n°4 de la série TogoGame (après Route N1, Nana Benz, Évala). Ce fichier 
 - `npm install`, puis `npm run dev` (port **5176** ; Route N1 utilise le 5173, Nana Benz le 5174, Évala le 5175). Le serveur doit rester ouvert. URL : http://localhost:5176/
 - `npm test` vérifie le scénario : références valides, meilleure fin atteignable.
 - Dépôt **public** `omarfarouk228/enquete-assigame`. GitHub Pages en mode workflow : https://omarfarouk228.github.io/enquete-assigame/
-- Débogage dans la console : `__as.S` (état), `__as.go('hotel')`, `__as.show('komi_conf')`, `__as.ending('police')`, `__as.notes()`, `__as.map()`.
 
 ## Architecture (Vite + JavaScript, Canvas 2D, interface DOM)
-- `src/story.js` : **tout le scénario en données** (lieux, personnages et leur apparence, indices, nœuds de dialogue, confrontations, points d'intérêt, horaires).
-  - Un nœud a la forme `{ who, text, choices: [{ t, go, need, needNot, set, clue, end }] }`.
-  - Une confrontation : `{ confront: { claim, clue (une ou plusieurs), ok, ko } }`.
-- `src/portrait.js` : portraits peints de trois quarts (yeux, nez, lèvres, coiffures : foulard en wax, locks, ras, crâne rasé ; vêtements : wax, maillot, polo, chemise, boubou ; lunettes, boucles d'oreilles, barbe). Cinq expressions. Cache par personnage et expression.
-- `src/scenes.js` : cinq décors peints (fond en cache), un **calque avant** (étals, foyers, motos : devant les passants), les passants animés, les personnages en pied (bas du corps peint et buste repris du portrait, donc le même visage qu'en dialogue).
-- `src/audio.js` : rumeur du marché, motos qui passent, klaxons, appels de vendeuses, vagues à l'hôtel, musique légère (basse, guitare en arpèges, shaker). `setMuted` est mémorisé dans `assigame.mute`.
-- `src/main.js` : boucle, survol et clic (personnages, points d'intérêt), dialogues avec texte qui s'écrit, présentation d'indices, carnet, plan, horloge, fins, sauvegarde (`assigame.save.v1`).
+- `src/story.js` : **tout le scénario en données** : chapitres, lieux (dont `far` pour les trajets en zem et `locked`), personnages et leur apparence (`look`, avec `face` pour la géométrie du visage, `pose`, `build`), indices, nœuds de dialogue, confrontations, points d'intérêt (`mini: 'search'` lance la fouille), tableau de déduction, événements de rue, fins.
+  - Nœud : `{ who, text, choices: [{ t, go, need, needNot, set, clue, end, mini }] }`. `AGAIN[id]` : nœud quand on reparle à quelqu'un.
+  - Confrontation : `{ confront: { claim, clue (une ou plusieurs), ok, ko } }`.
+- `src/portrait.js` : portraits de trois quarts, géométrie par personnage, six expressions, animation (respiration, clignements, bouche qui parle, regard). `headOnly()` fournit la tête pour les personnages en pied.
+- `src/figure.js` : **personnages en pied complets** : jambes et bassin, vêtements (pagne wax, pantalon, boubou, maillot…), bras articulés, mains avec doigts, sandales, ombre portée. Poses : `down`, `hip`, `cross`, `pocket`, `helmet`, `watch`, `counter`, `run`. La tête vient de `headOnly`, donc le même visage qu'en dialogue.
+- `src/scenes.js` : six décors peints (fond en cache), calque avant (`FRONT`), calque par-dessus les personnages (`OVER`, le comptoir du kiosque), animation par image (`drawCrowd` : passants, motos et taxis qui passent, fumée des foyers, vagues, palmiers, mouettes). Pages de test : `scenes.html`, `figures.html`.
+- `src/minigames.js` : trois séquences d'action, chacune `{ update, draw, key, tap, move }` : `zemRide` (course en zem, trois files, nids-de-poule, taxis, charrettes, piétons), `chase` (poursuite de Komi : flèche à presser avant que l'anneau se vide, trois ratés et il s'échappe), `roomSearch` (fouille de la chambre 12 en 45 s : malle sous le lit, reçu dans le boubou, billet sur la table).
+- `src/audio.js` : ambiances, musique, moteur de zem (`setEngine`), effets (`crash`, `step`, `tick`, `found`, `card`, `good`). `setMuted` mémorisé dans `assigame.mute`.
+- `src/main.js` : boucle, lumière du jour qui change de 9 h à 14 h, cinématiques (bandes noires, zoom lent, légende, clic pour passer), cartes de chapitre, dialogues, carnet, **tableau de déduction** (trois questions ; juste : indice « Le fil de l'affaire » ; faux : dix minutes), **plan dessiné** avec épingles, trajets (événements de rue une fois sur trois ; zem obligatoire vers l'hôtel et la gare), fins avec score et rang. Sauvegarde `assigame.save.v2`.
 
-## Le jeu (v0.1, 2026-11-08)
-- Lomé, un samedi de 2026. On incarne **Kafui Lawson**, étudiante en journalisme. La malle verte de Dada Akossiwa, sa tante (douze wax de 1974 hérités de la grand-mère, une Nana Benz : clin d'œil au jeu n°2), a disparu à l'aube.
-- De 9 h à 14 h, heure du car pour Cotonou par Hillacondji. Trajet : 20 min ; conversation : 10 min ; examen d'un indice : 5 min ; mauvaise preuve : 5 min.
-- **Lieux** : rue du Commerce (étal, chantier du Grand marché), coin du poisson fumé, carrefour de la cathédrale, kiosque de la rue de la Gare, hôtel du front de mer (débloqué par les aveux de Komi).
-- **Personnages** : Dada Akossiwa, Mawuli (apprenti, fausse piste), Séna (poisson fumé, a vu Komi), Fofo Kodjo (zémidjan, témoin), Komi (pousseur, a transporté la malle), Ayaovi (kiosque, Mobile Money), M. Dossou (antiquaire de Cotonou, commanditaire).
-- **Solution** : traces de pousse-pousse, puis témoignage de Kodjo, puis transfert de 150 000 F (+229) au kiosque, puis confrontation de Komi (aveux, chambre 12), puis confrontation de Dossou.
-- **Fins** : `police` (meilleure), `malle` (on récupère la malle, Dossou part), `faux` (on accuse Mawuli), `car` (14 h dépassées).
+## Le jeu (v0.2, 2026-11-08)
+- Lomé, un samedi de 2026. On incarne **Kafui Lawson**, étudiante en journalisme. La malle verte de Dada Akossiwa (douze wax de 1974 hérités de la grand-mère, une Nana Benz) a disparu à l'aube. De 9 h à 14 h, heure du car pour Cotonou.
+- **Chapitres** : 1 L'étal vide (rue du Commerce, poisson fumé, kiosque), 2 Le carrefour (Kodjo, Komi), 3 Le front de mer (hôtel, chambre 12), 4 La gare routière (si on arrive à l'hôtel après 13 h 10, Dossou est parti pour la gare : dernière chance avant 14 h).
+- **Solution** : traces et corde à l'étal → Kodjo (témoin, nom de Komi) → kiosque (transfert +229) → faire le point → confronter Komi → **poursuite** → confronter encore → aveux, adresse → **zem** → hôtel → **fouille** (reçu) → confronter Dossou → commissariat.
+- **Fins** : `police` (meilleure), `malle`, `faux` (accuser Mawuli), `car`. Rangs : Fine limière (police, avant midi, presque tous les indices), Reporter de terrain, Bonne nièce, Stagiaire.
+- **Coûts** : trajet 20 min ; zem 10 min + 4 par choc ; conversation 10 ; indice 5 ; mauvaise preuve 5 ; mauvaise déduction 10 ; poursuite ratée 15 ; fouille 10.
+- Débogage : `__as.S`, `__as.go('hotel')`, `__as.arrive('gare', 0)`, `__as.show('komi_conf')`, `__as.startChase()`, `__as.startSearch()`, `__as.startZem('hotel', min => ...)`, `__as.deduction()`, `__as.ending('police')`, `__as.mini` (séquence en cours).
 
 ## Sources et réalisme
 - Grand marché de Lomé (Assigamé) : incendie dans la nuit du 11 au 12 janvier 2013 (KOACI) ; reconstruction toujours en chantier en 2023 (allAfrica, Republicoftogo : 30 000 m² sur quatre niveaux, 2 400 places) ; incendie et effondrement en octobre 2025 (Togo Flying Labs). **On ne sait pas si le marché est rouvert en 2026** : le jeu montre un chantier, à vérifier.
@@ -44,7 +45,8 @@ Jeu n°4 de la série TogoGame (après Route N1, Nana Benz, Évala). Ce fichier 
 - Personnages, commerces, hôtel et événements : fictifs.
 
 ## Pistes
-- Personnages en pied plus détaillés (bras et mains, plis, démarche), animations de dialogue (clignements, bouche).
-- Plus de lieux (gare routière, plage, port), plus de fausses pistes, un second chapitre.
+- Personnages encore plus vivants : démarche, gestes pendant les dialogues, plus de variété de visages et de corps. L'utilisateur a demandé le 2026-11-08 « des personnages style GTA 5 » : voir la réponse dans la mémoire du dossier TogoGame (passage à la 3D ou art généré ; pas atteignable en Canvas procédural).
+- Second cas (nouvelle enquête) réutilisant les lieux et les séquences.
 - Voix synthétisées par personnage, comme dans Nana Benz.
 - Icône d'écran d'accueil, manifeste, image Open Graph.
+- Vérifier sur mobile : boutons tactiles des séquences (haut/bas du zem, trois zones de la poursuite), taille des épingles du plan.
